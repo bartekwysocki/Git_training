@@ -1,0 +1,31 @@
+version: 1.0.{build}
+assembly_info:
+  patch: true
+  file: '**\AssemblyInfo.*'
+  assembly_version: '{version}'
+  assembly_file_version: '{version}'
+  assembly_informational_version: '{version}'
+before_build:
+- cmd: nuget restore
+build:
+  project: TestFramework.ProjectExample.NUnit.sln
+  verbosity: minimal
+after_test:
+- ps: >-
+    Invoke-Expression 'nunit3-console .\TestFramework.ProjectExample.NUnit\bin\Debug\TestFramework.ProjectExample.NUnit.dll --result=myresults.xml`;format=AppVeyor'
+
+
+
+    if($lastexitcode -ne 0)
+      {
+       echo $lastexitcode
+      }
+
+    7z a testresults.zip .\TestFramework.ProjectExample.NUnit\bin\Debug\**\*.png
+
+    7z a testresults.zip .\TestFramework.ProjectExample.NUnit\bin\Debug\**\*.html
+
+    7z a testresults.zip .\TestFramework.ProjectExample.NUnit\bin\Debug\**\*.log
+
+
+    appveyor PushArtifact testresults.zip
